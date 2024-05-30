@@ -1,0 +1,20 @@
+{
+  "name": "cc-capstone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/firestore": "^7.7.0",
+    "@hapi/hapi": "^21.3.9",
+    "dotenv": "^16.4.5",
+    "env": "^0.0.2",
+    "nodemon": "^3.1.2"
+  }
+}
