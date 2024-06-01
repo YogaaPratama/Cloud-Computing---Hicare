@@ -1,36 +1,66 @@
 const texts = require("./texts");
 const articles = require("./texts");
+const { Firestore } = require('@google-cloud/firestore');
 
-const savetextHandler = (request, h) => {
+// const savetextHandler = (request, h) => {
+//   const { name, article } = request.payload;
+//   const newText = {
+//     name,article
+//   };
+
+//   texts.push(newText);
+
+//   const isSuccess = texts.filter((text) => text.name === name).length > 0;
+//   if (isSuccess) {
+//     const response = h.response({
+//       status: "success",
+//       message: "Artikel Berhasil Ditambahkan",
+//       data: {
+//         textName : name,
+//         textArticle : article
+//       },
+//     });
+//     response.code(201);
+//     return response;
+//   }
+  
+//   storeData(name, newText);
+
+//   const response = h.response({
+//     status: "fail",
+//     message: "Artikel gagal ditambahkan",
+//   });
+//   response.code(500);
+//   return response;
+// };
+
+const savetextHandler = async (request, h) => {
   const { name, article } = request.payload;
-  const newText = {
-    name,article
-  };
+  const newText = { name, article };
+  const db = new Firestore();
+  try {
+    await db.collection('texts').add(newText);
 
-  texts.push(newText);
-
-  const isSuccess = texts.filter((text) => text.name === name).length > 0;
-  if (isSuccess) {
     const response = h.response({
       status: "success",
       message: "Artikel Berhasil Ditambahkan",
       data: {
-        textName : name,
-        textArticle : article
+        textName: name,
+        textArticle: article
       },
     });
     response.code(201);
     return response;
-  }
-  
-  storeData(name, newText);
 
-  const response = h.response({
-    status: "fail",
-    message: "Artikel gagal ditambahkan",
-  });
-  response.code(500);
-  return response;
+  } catch (error) {
+    const response = h.response({
+      status: "fail",
+      message: "Artikel gagal ditambahkan",
+      error: error.message,
+    });
+    response.code(500);
+    return response;
+  }
 };
 
 const getAllTextHandler = (request, h) => {
