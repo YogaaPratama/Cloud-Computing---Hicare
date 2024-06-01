@@ -1,5 +1,4 @@
 const texts = require("./texts");
-const books = require("./texts");
 const articles = require("./texts");
 
 const savetextHandler = (request, h) => {
