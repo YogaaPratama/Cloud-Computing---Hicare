@@ -10,6 +10,6 @@ COPY . .
 
 ENV PORT=6500
 
-ENV MODEL_URL= 
+# ENV MODEL_URL=
 
 CMD ["npm", "start"]
