@@ -10,6 +10,6 @@ COPY . .
 
 ENV PORT=6500
 
-ENV MODEL_URL=https://storage.googleapis.com/mlgcp-radot25/submission-model/model.json 
+ENV MODEL_URL= 
 
 CMD ["npm", "start"]
