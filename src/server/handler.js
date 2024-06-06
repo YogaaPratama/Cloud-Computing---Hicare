@@ -73,8 +73,9 @@ const db = new Firestore(); // for search only
 // };
 
 const savetextHandler = async (request, h) => {
-  const { name, url_image, url_artikel, timestamp} = request.payload;
-  const newText = { name, url_image, url_artikel,timestamp  };
+  const { name, url_image, url_artikel} = request.payload;
+  const newText = { name, url_image, url_artikel,timestamp };
+  const timestamp = new Date().toISOString();
 
   try {
     await db.collection('texts').add(newText);
