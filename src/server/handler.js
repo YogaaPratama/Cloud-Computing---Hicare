@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const predictClassification = require("../services/inferenceService");
 const storeData = require("../services/storeData");
 const getData = require("../services/getData");
+const { time } = require("console");
 const db = new Firestore(); // for search only
 
 // async function postPredictHandler(request, h) {
@@ -72,8 +73,8 @@ const db = new Firestore(); // for search only
 // };
 
 const savetextHandler = async (request, h) => {
-  const { name, article } = request.payload;
-  const newText = { name, article };
+  const { name, url_image, url_artikel, timestamp} = request.payload;
+  const newText = { name, url_image, url_artikel,timestamp  };
 
   try {
     await db.collection('texts').add(newText);
@@ -82,7 +83,9 @@ const savetextHandler = async (request, h) => {
       message: "Artikel Berhasil Ditambahkan",
       data: {
         textName: name,
-        textArticle: article
+        texturlImage: url_image,
+        texturlArtikel : url_artikel,
+        textTimestamp : timestamp
       },
     });
     response.code(201);
