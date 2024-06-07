@@ -1,11 +1,11 @@
-const tf = require("@tensorflow/tfjs-node");
+const tfjs = require("@tensorflow/tfjs-node");
 const InputError = require("../exceptions/InputError");
 
 async function predictClassification(model, image) {
     try {
-        const tensor = tf.node
-            .decodeJpeg(image)
-            .resizeNearestNeighbor([224, 224])
+        const tensor = tfjs.node
+            .decodeJpeg(imageBuffer)
+            .resizeNearestNeighbor([150,150])
             .expandDims()
             .toFloat();
 

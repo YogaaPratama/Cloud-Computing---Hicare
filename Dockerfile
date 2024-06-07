@@ -10,6 +10,6 @@ COPY . .
 
 ENV PORT=6500
 
-ENV MODEL_URL=https://storage.googleapis.com/capstone_buckets_lettuce/model.json
+ENV MODEL_URL=https://storage.googleapis.com/capstone_buckets_lettuce2/tfjs/model.json
 
 CMD ["npm", "start"]

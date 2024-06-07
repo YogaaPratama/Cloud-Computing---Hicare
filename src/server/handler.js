@@ -7,45 +7,45 @@ const getData = require("../services/getData");
 const { time, timeStamp } = require("console");
 const db = new Firestore(); // for search only
 
-async function postPredictHandler(request, h) {
-  const { image } = request.payload;
-  const { model } = request.server.app;
-  const { label, suggestion } = await predictClassification(model, image);
-  const id = crypto.randomUUID();
-  const createdAt = new Date().toISOString();
+// async function postPredictHandler(request, h) {
+//   const { image } = request.payload;
+//   const { model } = request.server.app;
+//   const { label, suggestion } = await predictClassification(model, image);
+//   const id = crypto.randomUUID();
+//   const createdAt = new Date().toISOString();
 
-  const data = {
-      id: id,
-      result: label,
-      suggestion: suggestion,
-      createdAt: createdAt,
-  };
+//   const data = {
+//       id: id,
+//       result: label,
+//       suggestion: suggestion,
+//       createdAt: createdAt,
+//   };
 
-  await storeData(id, data);
-  const response = h.response({
-      status: "success",
-      message: "Model is predicted successfully",
-      data,
-  });
-  response.code(201);
-  return response;
-}
+//   await storeData(id, data);
+//   const response = h.response({
+//       status: "success",
+//       message: "Model is predicted successfully",
+//       data,
+//   });
+//   response.code(201);
+//   return response;
+// }
 
-async function getPredictHistoriesHandler(request, h) {
-  const data = await getData("\(default\)");
+// async function getPredictHistoriesHandler(request, h) {
+//   const data = await getData("\(default\)");
 
-  const response = h.response({
-      status: "success",
-      data,
-  });
-  response.code(200)
-  return response;
-}
+//   const response = h.response({
+//       status: "success",
+//       data,
+//   });
+//   response.code(200)
+//   return response;
+// }
 
 const savetextHandler = async (request, h) => {
-  const { name, url_image, url_artikel} = request.payload;
+  const { name, url_image, url_artikel,deskripsi} = request.payload;
   const timestamp = new Date().toISOString();
-  const newText = { name, url_image, url_artikel,timestamp };
+  const newText = { name, url_image, url_artikel,deskripsi,timestamp };
   
 
   try {
@@ -57,6 +57,7 @@ const savetextHandler = async (request, h) => {
         textName: name,
         texturlImage: url_image,
         texturlArtikel : url_artikel,
+        textDeskripsi : deskripsi,
         textTimestamp : timestamp
       },
     });
@@ -82,7 +83,7 @@ const getAllTextHandler = async (request, h) => {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      filterText.push({ name: data.name, url_image: data.url_image, url_artikel: data.url_artikel, timestamp: data.timestamp });
+      filterText.push({ name: data.name, url_image: data.url_image, url_artikel: data.url_artikel,deskripsi : data.deskripsi, timestamp: data.timestamp });
     });
 
     return h
@@ -143,4 +144,4 @@ const getTextbyNameHandler = async (request, h) => {
 
 
 
-module.exports = {getTextbyNameHandler,getAllTextHandler,savetextHandler,postPredictHandler,getPredictHistoriesHandler}
+module.exports = {getTextbyNameHandler,getAllTextHandler,savetextHandler}
