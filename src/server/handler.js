@@ -9,8 +9,9 @@ const db = new Firestore(); // for search only
 
 const savetextHandler = async (request, h) => {
   const { name, url_image, url_artikel} = request.payload;
-  const newText = { name, url_image, url_artikel,timestamp };
   const timestamp = new Date().toISOString();
+  const newText = { name, url_image, url_artikel,timestamp };
+  
 
   try {
     await db.collection('texts').add(newText);
@@ -46,7 +47,7 @@ const getAllTextHandler = async (request, h) => {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      filterText.push({ name: data.name, texturlImage: data.texturlImage, texturlArtikel: data.texturlArtikel, timeStamp:data.textTimestamp });
+      filterText.push({ name: data.name, url_image: data.url_image, url_artikel: data.url_artikel, timestamp: data.timestamp });
     });
 
     return h
