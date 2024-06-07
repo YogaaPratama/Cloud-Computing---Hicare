@@ -4,73 +4,8 @@ const crypto = require("crypto");
 const predictClassification = require("../services/inferenceService");
 const storeData = require("../services/storeData");
 const getData = require("../services/getData");
-const { time } = require("console");
+const { time, timeStamp } = require("console");
 const db = new Firestore(); // for search only
-
-// async function postPredictHandler(request, h) {
-//   const { image } = request.payload;
-//   const { model } = request.server.app;
-//   const { label, suggestion } = await predictClassification(model, image);
-//   const id = crypto.randomUUID();
-//   const createdAt = new Date().toISOString();
-
-//   const data = {
-//       id: id,
-//       result: label,
-//       suggestion: suggestion,
-//       createdAt: createdAt,
-//   };
-
-//   await storeData(id, data);
-//   const response = h.response({
-//       status: "success",
-//       message: "Model is predicted successfully",
-//       data,
-//   });
-//   response.code(201);
-//   return response;
-// }
-
-// async function getPredictHistoriesHandler(request, h) {
-//   const data = await getData("\(default\)");
-
-//   const response = h.response({
-//       status: "success",
-//       data,
-//   });
-//   response.code(200)
-//   return response;
-// }
-
-// const savetextHandler = (request, h) => {
-//   const { name, article } = request.payload;
-//   const newText = {
-//     name,article
-//   };
-
-//   texts.push(newText);
-
-//   const isSuccess = texts.filter((text) => text.name === name).length > 0;
-//   if (isSuccess) {
-//     const response = h.response({
-//       status: "success",
-//       message: "Artikel Berhasil Ditambahkan",
-//       data: {
-//         textName : name,
-//         textArticle : article
-//       },
-//     });
-//     response.code(201);
-//     return response;
-//   }
-
-//   const response = h.response({
-//     status: "fail",
-//     message: "Artikel gagal ditambahkan",
-//   });
-//   response.code(500);
-//   return response;
-// };
 
 const savetextHandler = async (request, h) => {
   const { name, url_image, url_artikel} = request.payload;
@@ -111,7 +46,7 @@ const getAllTextHandler = async (request, h) => {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      filterText.push({ name: data.name, article: data.article });
+      filterText.push({ name: data.name, texturlImage: data.texturlImage, texturlArtikel: data.texturlArtikel, timeStamp:data.textTimestamp });
     });
 
     return h
@@ -131,24 +66,6 @@ const getAllTextHandler = async (request, h) => {
     }).code(500);
   }
 };
-
-
-// const getAllTextHandler = (request, h) => {
-//   let filterText = [...articles];
-
-//   return h
-//     .response({
-//       status: "success",
-//       data: {
-//         texts: filterText.map((text) => ({
-//           name: text.name,
-//           article : text.article
-//         })),
-//       },
-//     })
-//     .code(200);
-// };
-
 
 const getTextbyNameHandler = async (request, h) => {
   const { textName } = request.params;
@@ -185,26 +102,6 @@ const getTextbyNameHandler = async (request, h) => {
   }
 };
 
-// const getTextbyNameHandler = (request, h) => {
-//   const { textName } = request.params;
-//   const text = texts.find((texts) => texts.name === textName);
-
-//   if (textName !== undefined) {
-//     return {
-//       status: "success",
-//       data: {
-//         text,
-//       },
-//     };
-//   }
-
-//   const response = h.response({
-//     status: "fail",
-//     message: "Artikel tidak ditemukan",
-//   });
-//   response.code(404);
-//   return response;
-// };
 
 
 
