@@ -1,5 +1,5 @@
 const {getTextbyNameHandler,getAllTextHandler,savetextHandler
-  } = require('./handler');
+  ,getPredictHistoriesHandler,postPredictHandler} = require('./handler');
   
   const routes = [
     {
@@ -17,26 +17,26 @@ const {getTextbyNameHandler,getAllTextHandler,savetextHandler
       path: '/texts/{textName}',
       handler: getTextbyNameHandler
     },
-    // {
-    //   method : 'POST',
-    //   path : '/predict',
-    //   handler: postPredictHandler,
-    //   options:{
-    //     payload :{
-    //       allow : "multipart/form-data",
-    //       output: 'stream',
-    //       maxBytes : 1000000,
-    //       parse: true,
-    //       multipart : true,
-    //     },
-    //   },
-    // },
+
+    {
+      method : 'POST',
+      path : '/predict',
+      handler: postPredictHandler,
+      options:{
+        payload: {
+          output: 'stream',
+          parse: true,
+          multipart: true,
+          maxBytes: 10485760 // 10 MB
+      },
+      },
+    },
     
-    // {
-    //   method : 'GET',
-    //   path : '/predict/histories',
-    //   handler : getPredictHistoriesHandler
-    // }
+    {
+      method : 'GET',
+      path : '/predict/histories',
+      handler : getPredictHistoriesHandler
+    }
   ];
   
   module.exports = routes;
