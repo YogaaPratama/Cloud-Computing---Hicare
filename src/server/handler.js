@@ -5,7 +5,7 @@ const predictClassification = require("../services/inferenceService");
 const storeData = require("../services/storeData");
 const getData = require("../services/getData");
 const { time, timeStamp } = require("console");
-const db = new Firestore(); // for search only
+const db = new Firestore(); // for search & histories
 
 async function postPredictHandler(request, h) {
   const { image } = request.payload;
@@ -31,16 +31,36 @@ async function postPredictHandler(request, h) {
   return response;
 }
 
-async function getPredictHistoriesHandler(request, h) {
-  const data = await getData("\(default\)");
+// async function getPredictHistoriesHandler(request, h) {
+//   const data = await getData("\(default\)");
 
-  const response = h.response({
-      status: "success",
-      data,
-  });
-  response.code(200)
-  return response;
-}
+//   const response = h.response({
+//       status: "success",
+//       data,
+//   });
+//   response.code(200)
+//   return response;
+// }
+
+const getPredictHistoriesHandler = async (request,h) => { 
+  try{
+    const requestData = request.payload;
+    
+    if (!requestData || !Array.isArray(requestData)){
+      return h.response({error :'Invalid request data'}).code(400);
+    }
+    const batch = db.batch();
+    requestData.forEach(data => {
+        const docRef = db.collection('history').doc();
+        batch.set(docRef, data);
+    });
+    await batch.commit();
+    return h.response({ message: 'History data received and saved successfully' }).code(200);
+  } catch(error){
+    console.error('Error handling history request:', error);
+    return h.response({ error: 'Internal server error' }).code(500);
+  }
+};
 
 const savetextHandler = async (request, h) => {
   const { name, url_image, url_artikel,deskripsi} = request.payload;

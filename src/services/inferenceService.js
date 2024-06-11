@@ -1,11 +1,14 @@
 const tfjs = require("@tensorflow/tfjs-node");
 const InputError = require("../exceptions/InputError");
 
-async function predictClassification(model, image) {
+async function predictClassification(model, imageBuffer) {
     try {
+        // if (!Buffer.isBuffer(imageBuffer)) {
+        //     throw new InputError("Input tidak valid: Diharapkan buffer yang berisi data gambar JPEG");
+        // }
         const tensor = tfjs.node
-            .decodeJpeg(imageBuffer)
-            .resizeNearestNeighbor([150,150])
+            .decodeImage(imageBuffer, 3)  // decodeImage dapat menangani berbagai format gambar
+            .resizeNearestNeighbor([256,256])
             .expandDims()
             .toFloat();
 

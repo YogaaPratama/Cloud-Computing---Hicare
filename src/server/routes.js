@@ -25,8 +25,9 @@ const {getTextbyNameHandler,getAllTextHandler,savetextHandler,postPredictHandler
         payload: {
           output: 'stream',
           parse: true,
+          allow: 'multipart/form-data',
+          // maxBytes: 50 * 1024 * 1024, // 50 MB limit
           multipart: true,
-          maxBytes: 10485760 // 10 MB
       },
       },
     },

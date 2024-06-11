@@ -1,12 +1,13 @@
 require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
+const Inert = require("@hapi/inert");
 const routes = require("../server/routes");
 const loadModel = require("../services/loadModel");
 const InputError = require("../exceptions/InputError");
 const init = async () => {
   const server = Hapi.server({
-    port: process.env.PORT,
+    port: 9890,
     host: 'localhost',
     routes: {
       cors: {
@@ -14,6 +15,13 @@ const init = async () => {
       },
     },
   });
+
+  await server.register(Inert);
+
+      server.ext('onRequest', (request, h) => {
+        console.log(`Received request: ${request.method.toUpperCase()} ${request.path}`);
+        return h.continue;
+    });
 
   const model = await loadModel();
   server.app.model = model;
@@ -25,7 +33,7 @@ const init = async () => {
     if (response instanceof InputError) {
         const newResponse = h.response({
             status: "fail",
-            message: "Terjadi kesalahan dalam melakukan prediksi",
+            message: response.message,
         });
         newResponse.code(400);
         return newResponse;
