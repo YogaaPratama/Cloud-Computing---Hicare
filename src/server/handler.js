@@ -1,131 +1,144 @@
-const texts = require("./texts");
 const { Firestore } = require('@google-cloud/firestore');
-const crypto = require("crypto");
-const predictClassification = require("../services/inferenceService");
-const storeData = require("../services/storeData");
-const getData = require("../services/getData");
-const { time, timeStamp } = require("console");
 const db = new Firestore(); // for search & histories
+const express = require('express');
+const tf = require('@tensorflow/tfjs-node');
+const multer = require('multer');
+const app = express();
+const sharp = require('sharp')
+const upload = multer({dest: 'uploads/'});
+const moment = require('moment-timezone')
 
-async function postPredictHandler(request, h) {
-  const { image } = request.payload;
-  const { model } = request.server.app;
-  const { label, suggestion } = await predictClassification(model, image);
-  const id = crypto.randomUUID();
-  const createdAt = new Date().toISOString();
 
-  const data = {
-      id: id,
-      result: label,
-      suggestion: suggestion,
-      createdAt: createdAt,
-  };
+const postPredictHandler = async (req,res)=>{
+  const imagePath = req.file.path;
+  const modelPath = 'https://storage.googleapis.com/capstone_buckets_lettuce3/model/tmp/tfjs_inceptionv3/model.json'
+  try{
+    const model = await tf.loadLayersModel(modelPath);
+    const processedImage = await preprocessImage(imagePath);
+    
+    const input = tf.expandDims(processedImage,0);
+    const output = model.predict(input);
+    const prediction = Array.from(output.dataSync());
+    const currentTime = moment().tz("Asia/Jakarta").format("M/D/YYYY, h:mm:ss A");
 
-  await storeData(id, data);
-  const response = h.response({
-      status: "success",
-      message: "Model is predicted successfully",
-      data,
-  });
-  response.code(201);
-  return response;
+    const labels = ["Healthy","Bacterial", "Powdery mildew","Downy Mildew", "Septoria blight", "Wilt blight", "Virus" ];
+    const predictionObject ={};
+
+    prediction.forEach((value, index) => {
+        const label = labels[index];
+        const percentage = (value * 100).toFixed(2);
+        predictionObject[label] = parseFloat(percentage);
+    });
+
+    const maxLabel = Object.keys(predictionObject).reduce((a, b) =>
+        predictionObject[a] > predictionObject[b] ? a : b
+    );
+
+    const maxLabelPercentage = predictionObject[maxLabel].toFixed(2) + "%";
+
+    const reccomendation ={
+        action: 'Segera Lakukan Perawatan',
+        message:`Berdasarkan prediksi ${maxLabel}, disarankan melakukan perawatan atau mengasingkan daun yang terkena penyakit`,
+    };
+
+    const jsonResponse = {
+        predictions: Object.keys(predictionObject).reduce((acc, key) => {
+            acc[key] = predictionObject[key].toFixed(2) + "%";
+            return acc;
+        }, {}),
+        maxLabel:{
+            label: maxLabel,
+            percentage : maxLabelPercentage,
+        },
+        created : currentTime,
+        reccomendation: reccomendation,
+    };
+
+    res.json(jsonResponse);
+}
+catch(error){
+    console.error('Error loading model or predicting image:', error);
+    res.status(500).json({ error: 'Failed to load model or predict image.' });
 }
 
-// async function getPredictHistoriesHandler(request, h) {
-//   const data = await getData("\(default\)");
-
-//   const response = h.response({
-//       status: "success",
-//       data,
-//   });
-//   response.code(200)
-//   return response;
-// }
-
-const getPredictHistoriesHandler = async (request,h) => { 
+async function preprocessImage(imagePath){
   try{
-    const requestData = request.payload;
-    
-    if (!requestData || !Array.isArray(requestData)){
-      return h.response({error :'Invalid request data'}).code(400);
-    }
-    const batch = db.batch();
-    requestData.forEach(data => {
-        const docRef = db.collection('history').doc();
-        batch.set(docRef, data);
-    });
-    await batch.commit();
-    return h.response({ message: 'History data received and saved successfully' }).code(200);
-  } catch(error){
-    console.error('Error handling history request:', error);
-    return h.response({ error: 'Internal server error' }).code(500);
-  }
-};
+      console.log(`Processing image at path: ${imagePath}`);
+      const image = sharp(imagePath);
+      console.log('Image loaded with sharp');
 
-const savetextHandler = async (request, h) => {
-  const { name, url_image, url_artikel,deskripsi} = request.payload;
+      const resizedImage = await image.resize(256, 256).toBuffer();
+      console.log('Image resized');
+
+      const buffer = tf.node.decodeImage(resizedImage, 3);
+      console.log('Image decoded to tensor');
+
+      const normalizedImage = tf.cast(buffer, 'float32').div(255);
+      console.log('Image normalized');
+
+      return normalizedImage;
+  }
+  catch(error){
+      throw new Error ('Failed to preprocess image.');
+  }
+
+}
+}
+
+const savetextHandler = async (req, res) => {
+  const { name, url_image, url_artikel, deskripsi } = req.body;
   const timestamp = new Date().toISOString();
-  const newText = { name, url_image, url_artikel,deskripsi,timestamp };
-  
+  const newText = { name, url_image, url_artikel, deskripsi, timestamp };
 
   try {
     await db.collection('texts').add(newText);
-    const response = h.response({
+    return res.status(201).json({
       status: "success",
       message: "Artikel Berhasil Ditambahkan",
       data: {
         textName: name,
         texturlImage: url_image,
-        texturlArtikel : url_artikel,
-        textDeskripsi : deskripsi,
-        textTimestamp : timestamp
+        texturlArtikel: url_artikel,
+        textDeskripsi: deskripsi,
+        textTimestamp: timestamp
       },
     });
-    response.code(201);
-    return response;
-
   } catch (error) {
-    const response = h.response({
+    return res.status(500).json({
       status: "fail",
       message: "Artikel gagal ditambahkan",
       error: error.message,
     });
-    response.code(500);
-    return response;
   }
 };
 
-
-const getAllTextHandler = async (request, h) => {
+const getAllTextHandler = async (req, res) => {
   try {
     const querySnapshot = await db.collection('texts').get();
     const filterText = [];
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      filterText.push({ name: data.name, url_image: data.url_image, url_artikel: data.url_artikel,deskripsi : data.deskripsi, timestamp: data.timestamp });
+      filterText.push({ name: data.name, url_image: data.url_image, url_artikel: data.url_artikel, deskripsi: data.deskripsi, timestamp: data.timestamp });
     });
 
-    return h
-      .response({
-        status: "success",
-        data: {
-          texts: filterText,
-        },
-      })
-      .code(200);
-
+    return res.status(200).json({
+      status: "success",
+      data: {
+        texts: filterText,
+      },
+    });
   } catch (error) {
     console.error('Gagal Mendapatkan Dokumen!:', error);
-    return h.response({
+    return res.status(500).json({
       status: 'error',
       message: 'Gagal mengambil dokumen dari Database'
-    }).code(500);
+    });
   }
 };
 
-const getTextbyNameHandler = async (request, h) => {
-  const { textName } = request.params;
+const getTextbyNameHandler = async (req, res) => {
+  const { textName } = req.params;
 
   try {
     const querySnapshot = await db.collection('texts')
@@ -133,35 +146,27 @@ const getTextbyNameHandler = async (request, h) => {
       .get();
 
     if (querySnapshot.empty) {
-      const response = h.response({
+      return res.status(404).json({
         status: "fail",
         message: "Artikel tidak ditemukan",
       });
-      response.code(404);
-      return response;
     }
+
     const text = querySnapshot.docs[0].data();
 
-    return {
+    return res.status(200).json({
       status: "success",
       data: {
         text,
       },
-    };
+    });
   } catch (error) {
     console.error('Error mengambil dokumen:', error);
-    const response = h.response({
+    return res.status(500).json({
       status: 'error',
       message: 'Gagal dalam mendapatkan dokumen dari database'
     });
-    response.code(500);
-    return response;
   }
 };
 
-
-
-
-
-
-module.exports = {getTextbyNameHandler,getAllTextHandler,savetextHandler,getPredictHistoriesHandler,postPredictHandler}
+module.exports = { getTextbyNameHandler, getAllTextHandler, savetextHandler,postPredictHandler };

@@ -1,43 +1,19 @@
-const {getTextbyNameHandler,getAllTextHandler,savetextHandler,postPredictHandler,getPredictHistoriesHandler} = require('./handler');
-  
-  const routes = [
-    {
-      method: 'POST',
-      path: '/texts',
-      handler: savetextHandler
-    },
-    {
-      method: 'GET',
-      path: '/texts',
-      handler: getAllTextHandler
-    },
-    {
-      method: 'GET',
-      path: '/texts/{textName}',
-      handler: getTextbyNameHandler
-    },
+const express = require('express');
+const multer = require('multer')
+const { getTextbyNameHandler, getAllTextHandler, savetextHandler, postPredictHandler} = require('./handler');
+const upload = multer({dest: 'uploads/'});
+const router = express.Router();
 
-    {
-      method : 'POST',
-      path : '/predict',
-      handler: postPredictHandler,
-      options:{
-        payload: {
-          output: 'stream',
-          parse: true,
-          allow: 'multipart/form-data',
-          // maxBytes: 50 * 1024 * 1024, // 50 MB limit
-          multipart: true,
-      },
-      },
-    },
-    
-    {
-      method : 'GET',
-      path : '/predict/histories',
-      handler : getPredictHistoriesHandler
-    }
-  ];
-  
-  module.exports = routes;
-  
+// POST /texts
+router.post('/texts', savetextHandler);
+
+// GET /texts
+router.get('/texts', getAllTextHandler);
+
+// GET /texts/:textName
+router.get('/texts/:textName', getTextbyNameHandler);
+
+//POST /predict
+router.post('/predict', upload.single('image'), postPredictHandler);
+
+module.exports = router;

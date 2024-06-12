@@ -1,58 +1,55 @@
-require("dotenv").config();
+// Load environment variables from a .env file
+require('dotenv').config();
 
-const Hapi = require("@hapi/hapi");
-const Inert = require("@hapi/inert");
-const routes = require("../server/routes");
-const loadModel = require("../services/loadModel");
-const InputError = require("../exceptions/InputError");
-const init = async () => {
-  const server = Hapi.server({
-    port: 9890,
-    host: 'localhost',
-    routes: {
-      cors: {
-        origin: ['*'],
-      },
-    },
-  });
+// Import required modules
+const express = require('express');
+const cors = require('cors');
+const routes = require('../server/routes'); // Adjust this path if needed
+const InputError = require('../exceptions/InputError'); // Adjust the path to where your InputError is defined
 
-  await server.register(Inert);
+// Create an Express application
+const app = express();
 
-      server.ext('onRequest', (request, h) => {
-        console.log(`Received request: ${request.method.toUpperCase()} ${request.path}`);
-        return h.continue;
-    });
+// Define the port for the server to listen on
+const port = 6500;
+const host = '0.0.0.0';
 
-  const model = await loadModel();
-  server.app.model = model;
 
-  server.route(routes);
-  server.ext("onPreResponse", function (request, h) {
-    const response = request.response;
+// Enable Cross-Origin Resource Sharing (CORS) for all origins
+app.use(cors());
 
-    if (response instanceof InputError) {
-        const newResponse = h.response({
-            status: "fail",
-            message: response.message,
-        });
-        newResponse.code(400);
-        return newResponse;
-    }
-
-    if (response.isBoom) {
-        const newResponse = h.response({
-            status: "fail",
-            message: response.message,
-        });
-        newResponse.code(413);
-        return newResponse;
-    }
-
-    return h.continue;
+// Middleware to log all incoming requests
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.path}`);
+  next(); // Proceed to the next middleware/route handler
 });
 
-  await server.start();
-  console.log(`Server berjalan pada ${server.info.uri}`);
-};
+// Register the routes from the imported routes module
+app.use(routes);
 
-init();
+// Error handling middleware for InputError
+app.use((err, req, res, next) => {
+  // If the error is an instance of InputError, return a 400 status with a custom message
+  if (err instanceof InputError) {
+    return res.status(400).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+
+  // If it's a different kind of error, return a 413 status with a custom message
+  if (err) {
+    return res.status(413).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+
+  // If there's no error, proceed to the next middleware/route handler
+  next();
+});
+
+// Start the server and listen on the defined port
+app.listen(port, () => {
+  console.log(`Server berjalan pada http://${host}:${port}`);
+});
