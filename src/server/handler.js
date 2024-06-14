@@ -1,10 +1,10 @@
 const { Firestore } = require('@google-cloud/firestore');
 const db = new Firestore(); // for search & histories
 const express = require('express');
-const tf = require('@tensorflow/tfjs-node');
+//const tf = require('@tensorflow/tfjs-node');
 const multer = require('multer');
 const app = express();
-const sharp = require('sharp')
+//const sharp = require('sharp')
 const upload = multer({dest: 'uploads/'});
 const moment = require('moment-timezone')
 

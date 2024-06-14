@@ -5,14 +5,20 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const routes = require('../server/routes'); 
+const bodyParser = require('body-parser');
 const InputError = require('../exceptions/InputError'); 
 
 
 const app = express();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = 6500;
-const host = '0.0.0.0';
+const host = 'localhost';
+
+// const port = process.env.PORT; buat deploy
+// const host = '0.0.0.0';
 
 
 
