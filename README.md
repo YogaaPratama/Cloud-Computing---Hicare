@@ -36,7 +36,7 @@ Saat pengembangan aplikasi ini, kami memakai spesifikasi teknologi sebagai berik
 ## Cara Pemakaian
 1. Pastikan sudah menginstall Code Editor dan Nodejs (NPM)
 2. Pastikan sudah memakai WSL2 di Terminal VSCode (Ubuntu Distro / OpenSUSE)
-3. Download dan Ekstrak Code ( Bisa Menggunakan Git Clone)
+3. Download dan Ekstrak Code ( Bisa Menggunakan Git Clone), code berada di branch master.
 4. Jalankan perintah ``` npm install ```
 5. Buka server.js, pastikan port dan host yang dipakai **bukan untuk deployment**.
 
