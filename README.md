@@ -30,6 +30,7 @@ Saat pengembangan aplikasi ini, kami memakai spesifikasi teknologi sebagai berik
 | Javascript   | Bahasa Keseluruhan aplikasi   |
 | Cloud Run | Layanan Upload Aplikasi dari Google Cloud Platform|
 |Cloud Storage | Layanan Upload Model Machine Learning|
+|Firestore|Penyimpanan Data Artikel yang di Post|
 |Docker|Perantara Deployment ke Cloud Run ( Google Cloud Platform) |
 |ExpressJS|Code Framework yang digunakan|
 
