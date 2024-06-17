@@ -18,7 +18,7 @@ Area ini digunakan untuk development di Postman.
 | Method | Endpoint/Path | Keterangan |
 |--------|---------------|--------------|
 | POST | /texts | Posting Artikel |
-| POST | /predict | Posting gambar prediksi (Unavaiable in Apps)|
+| POST | /predict | Posting gambar prediksi (Unavailable in Apps)|
 | GET | /texts | Mengambil data artikel keseluruhan |
 | GET | /texts/:textName | Mengambil data artikel berdasarkan nama|
 
